@@ -10,7 +10,3 @@ w = np.array([1, 3, 5])
 result = np.dot(x,w)
 print(result)
 print(result.shape)
-
-w_2d = np.array([[1, 3, 5]])  # shape (1, 3)
-print(w_2d.shape)
-print(np.dot(x, w_2d.T))     # precisa transpor — por quê?
