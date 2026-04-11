@@ -10,8 +10,6 @@ w = np.array([0.1]) # only one feature (tumor size), so weight is a 1D array
 b = 0
 alpha = 0.01 # learning rate
 
- #linear combination of inputs and weights
-
 def sigmoid(z):
     predicted = 1 / (1 + np.exp(-z)) #sigmoid function to convert linear output to probability
     return predicted
