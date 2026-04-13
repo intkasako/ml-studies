@@ -14,7 +14,7 @@ X, y = data.data, data.target
 
 
 
-dataframe = pd.DataFrame(X, columns=("sepal_lengt", "sepal_width", "petal_lenght",
+dataframe = pd.DataFrame(X, columns=("sepal_length", "sepal_width", "petal_length",
                             "petal_width"))
 dataframe["class"] = y
 
