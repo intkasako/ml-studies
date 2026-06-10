@@ -27,7 +27,7 @@ These columns were removed for three different reasons:
 - **Data leakage**: `alive` is just `survived` in string form ("yes"/"no"). Keeping it would let the model "cheat" by reading the answer directly.
 - **Redundancy**: `class` duplicates `pclass`, and `embark_town` duplicates `embarked`.
 - **Engineered duplicates**: `who`, `adult_male`, and `alone` are derived from `sex`, `age`, `sibsp`, and `parch`. The tree can learn those rules on its own from the raw columns.
-- **Too many nulls**: `deck` has ~688 missing values out of 891 (77%). Imputing that much would invent more data than is honest.
+- **Nulls**: `deck` has ~688 missing values out of 891 (77%). Imputing that much would invent more data than is honest.
 
 ### Null treatment
 
@@ -42,7 +42,7 @@ Decision trees only accept numerical input, so categorical features need to be c
 - `sex`: binary, mapped directly to `{male: 0, female: 1}`.
 - `embarked`: 3 categories (C, Q, S), one-hot encoded with `drop_first=True` to avoid redundancy (3 categories only need 2 columns to be uniquely identified).
 
-> Note: decision trees do **not** require feature scaling (Z-score, min-max, etc.). They split on absolute values, so feature scale is irrelevant.
+> Here, there is no need for feature scaling.
 
 ## 3. Data splitting
 
@@ -73,7 +73,7 @@ This is textbook **overfitting**: the model nearly memorizes the training set (9
 
 ## 5. Hyperparameter tuning
 
-To find the right level of tree complexity, the script trains 15 trees with `max_depth` ranging from 1 to 15, evaluating each on the train and CV sets:
+To find the right level of tree complexity, the script trains 15 trees with `max_depth`, evaluating each on the train and CV sets:
 
 ```
 depth= 1  train=0.7884  cv=0.7809
@@ -89,7 +89,7 @@ depth=15  train=0.9850  cv=0.7584
 
 ![Train vs CV accuracy by max_depth](images/depth_tuning.png)
 
-The shape of the curve tells the story: train accuracy keeps climbing as depth increases, but CV accuracy peaks at `max_depth=4` and then degrades. Anything beyond that is fitting noise rather than signal.
+Train accuracy keeps climbing as depth increases, but CV accuracy peaks at `max_depth=4` and then degrades. Anything beyond that is fitting noise rather than signal.
 
 ## 6. Final model
 
@@ -128,9 +128,9 @@ embarked_Q   0.0000
 age_missing  0.0000
 ```
 
-`sex` dominates with nearly half of the total importance, which matches the historical "women and children first" policy. `pclass` and `fare` follow as the next most informative features.
+`sex` dominates with nearly half of the total importance, which curiously matches the historical "women and children first" policy. `pclass` and `fare` follow as the next most informative features.
 
-Three features ended up with zero importance: `parch`, `embarked_Q`, and `age_missing`. The `age_missing` flag — added under the assumption that "not knowing the age" might itself be a signal — turned out to be useless for this model. A good reminder that not every piece of feature engineering pays off.
+Three features ended up with zero importance: `parch`, `embarked_Q`, and `age_missing`. The `age_missing` flag — added under the assumption that "not knowing the age" might itself be a signal — turned out to be useless for this model.
 
 ## 7. Test set evaluation
 
@@ -165,13 +165,6 @@ actual survived         24             45
 
 24 actual survivors were misclassified as deaths — about a third of all survivors. This could be improved with techniques like `class_weight='balanced'` or threshold tuning.
 
-## Key takeaways
-
-- Decision trees overfit aggressively when unrestricted; controlling `max_depth` is the main lever for regularization.
-- Feature scaling is unnecessary for tree-based models.
-- The default `gini` and `entropy` criteria produce nearly identical results in practice; the bigger gains come from depth tuning and clean data.
-- Always check for **data leakage** in the dataset (the `alive` column was a perfect example — it would give the model the answer directly).
-- Tree-based models offer interpretability that neural networks don't: you can read each split as a rule and explain individual predictions.
 
 ## Requirements
 

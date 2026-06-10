@@ -147,7 +147,7 @@ for p, pred in list(zip(probs, preds))[:10]:
     label = 'survived' if pred == 1 else 'died'
     print(f"  {p[0]:>8.3f}  {p[1]:>10.3f}   {label}")
 
-
+# Final evaluation on test set
 print("\n" + "="*50)
 print("FINAL EVALUATION ON TEST SET")
 print("="*50)
