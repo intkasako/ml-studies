@@ -1,4 +1,5 @@
 from pathlib import Path
+from pyexpat import features
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -110,3 +111,55 @@ results_df = pd.DataFrame(results)
 
 best = results_df.loc[results_df['cv'].idxmax()]
 print(f"\nBest: n_estimators={int(best['n_estimators'])}, max_depth={best['max_depth']}, cv={best['cv']:.4f}")
+
+# Final model
+final_model = RandomForestClassifier(
+    n_estimators=int(best['n_estimators']),
+    max_depth=int(best['max_depth']) if pd.notna(best['max_depth']) else None,
+    random_state=9, criterion='entropy', n_jobs=-1
+)
+final_model.fit(X_train, y_train)
+
+# Test evaluation
+test_acc = final_model.score(X_test, y_test)
+print(f"\n--- Final Test Evaluation ---")
+print(f"Test accuracy: {test_acc:.4f}")
+
+y_pred = final_model.predict(X_test)
+print("\n--- Classification Report ---")
+print(classification_report(y_test, y_pred))
+
+print("--- Confusion Matrix ---")
+cm = confusion_matrix(y_test, y_pred, labels=final_model.classes_)
+print(pd.DataFrame(cm, index=[f"actual {c}" for c in final_model.classes_],
+                       columns=[f"pred {c}" for c in final_model.classes_]))
+
+plt.figure(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=final_model.classes_,
+            yticklabels=final_model.classes_,
+            cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix — Random Forest on Test Set')
+plt.tight_layout()
+plt.savefig(IMAGES_DIR / 'confusion_matrix.png', dpi=100, bbox_inches='tight')
+
+# Feature Importance
+importances = final_model.feature_importances_
+features = X_train.columns
+idx = np.argsort(importances)[::-1]
+
+print("\n--- Feature Importance ---")
+for f, imp in zip(features[idx], importances[idx]):
+    print(f"  {f:20s} {imp:.4f}")
+
+plt.figure(figsize=(9, 5))
+plt.bar(range(len(features)), importances[idx])
+plt.xticks(range(len(features)), features[idx], rotation=45, ha='right')
+plt.ylabel('Importance')
+plt.title('Feature Importance — Random Forest')
+plt.tight_layout()
+plt.savefig(IMAGES_DIR / 'feature_importance.png', dpi=100, bbox_inches='tight')
+
+plt.show()
