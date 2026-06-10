@@ -1,0 +1,1 @@
+fazer comparacao usando categorical=True usando getdummies e usando labelencoding
